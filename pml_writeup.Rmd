@@ -67,7 +67,6 @@ for(i in 1:length(tr)){
 }
 # select out the rows we care about 
 tr <- dplyr::select(tr, keepers_num)
-colnames(tr)
 ```
 
 ## Model Selection 
@@ -81,19 +80,66 @@ I chose Random Forests, because the authors of the paper I read used it and obta
 
 I thought about using Naive Bayes and or Logistic Regression; however, since this assignment is a multi-classification problem, it would require an one-vs-all method be implemented.  Since I would have to spend time to implement this myself, I chose not to do so. (Note that `svm` as part of the `e1071` package handles multi-classification out-of-the-box.)
 
+Below are the models derived from the analysis
+
+```{r echo=FALSE}
+library(caret)
+inTrain <- createDataPartition(tr$classe, p = .6, list = F)
+training <- tr[inTrain,]
+testing <- tr[-inTrain,]
+
+
+train_model <- function(algo_name, train_data){
+  tC <- trainControl(method = "repeatedcv", repeats = 2)
+  train(classe ~ ., data = train_data, method = algo_name, trainControl = tC)
+}
+library(doParallel)
+cl <- makeCluster(detectCores())
+registerDoParallel(cl)
+rf <- train_model("rf", training)
+treebag <- train_model("treebag", training)
+stopCluster(cl)
+```
+
+*Random Forests*
+
+```{r echo=FALSE}
+print(rf)
+```
+
+*Treebag*
+
+```{r echo=FALSE}
+print(treebag)
+```
+
 ## Expected Out-of-Sample Error 
 
-The expected out-of-sample error was estimated from the training data we obtained from `pml-training.csv`. I split the training set into a `training-set` and `testing-set`.  The `training-set` was used to generate the model.  The `testing-set` was used to generate the out-of-sample error estimate.  This data set was *not* used to generate the model and thus gives us an idea of how the model may perform on new instances.
+The expected out-of-sample error was estimated from the training data we obtained from `pml-training.csv`. I split the training set into a `training-set` and `testing-set`.  The `training-set` was used to generate the model.  The `testing-set` was used to generate the out-of-sample error estimate.  The `testing-set` data set was *not* used to generate the model and thus gives us an idea of how the model may perform on new instances.
 
 Classifier    | Expected Out-of-Sample Error
 --------------|-----------------------------
 Random Forest | 1%
-Treebag       | 2%
+Treebag       | 1%
 
-I ended up choosing the Random Forest classifier. It ended up producing a perfect score on `pml-testing.csv`.  Because the Expected Out-of-Sample error was so low, I didn't need to re-evaluate my approach.  However, if I did, I would have split the `training-set` further to produe a `validation-set` to tune my approach toward.  Ostensibly, the cross validation I specify in `trainControl` should be performing cross validation.  However, when the model is examined after calling `train`, "Bootstrapped" is shown as the resampling method.  More information on this is provided in the "Caret Untrustworthiness" section below.      
+### Random Forests Performance on Held Out Set
+
+```{r echo=FALSE}
+confusionMatrix(predict(rf, testing), testing$classe)
+```
+
+### Treebag Performance on Held Out Set
+
+```{r echo=FALSE}
+confusionMatrix(predict(treebag, testing), testing$classe)
+```
+
+I ended up choosing the Random Forest classifier. It eventually ended up producing a perfect score on `pml-testing.csv`.  Because the Expected Out-of-Sample error was so low, I didn't need to re-evaluate my approach.  However, if I did, I would have split the `training-set` further to produe a `validation-set` to tune my approach toward.  Ostensibly, the cross validation I specify in `trainControl` should be performing cross validation.  However, when the model is examined after calling `train`, "Bootstrapped" is shown as the resampling method.  More information on this is provided in the "Caret Untrustworthiness" section below.      
 
 ## Lessons Along the Way
+
 My lessons have dealt directly with the `caret` package. 
+
 ### Caret Package CV Compatability  
 There are cases where you cannot perform certain types of training across multiple models.  For instance, I tried the following algorithms with "cv" as the method for training: 
 
@@ -103,17 +149,7 @@ There are cases where you cannot perform certain types of training across multip
 However, they do work with the "boot" training method.  It's unclear why this issue exists.  What it does suggest is that the to perform the type of training of models one wants, they will be unable to rely too heavily on the `caret` package.   
 
 ### Caret Speed 
-The `caret` package can be extremely slow.  While it does a lot of work for you, the amount of time it takes to run algorithms through it can be quite alarming.  To mitigate this to some extent, you'll want to do the following: 
-
-```{r eval=FALSE}
-library(doParallel)
-cl <- makeCluster(detectCores())
-registerDoParallel(cl)
-#...your code
-stopCluster(cl)
-```
-
-The above tip was obtained from the discussion forum for this project.  
+The `caret` package can be extremely slow.  While it does a lot of work for you, the amount of time it takes to run algorithms through it can be quite alarming.  To mitigate this to some extent, invoke multiple cores if you have them.  
 
 ### Caret Untrustworthiness
 The package allows one to specify a training method.  However, I found that when I requested `cv` (with `number = 1`) or `repeatedcv` (`repeats = 2`) the model return states `Bootstrapped (25 reps)`.  That said, it may be beneficial to perform these functions manually to ensure they happen the way you expect them to.  However, when the `model$dots$trainControl` object is examined, you will see either `cv` or `repeatedcv` as the method specified.     

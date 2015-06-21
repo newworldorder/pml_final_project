@@ -95,25 +95,6 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 ## The following objects are masked from 'package:base':
 ## 
 ##     intersect, setdiff, setequal, union</code></pre>
-<pre><code>##  [1] &quot;user_name&quot;            &quot;num_window&quot;           &quot;roll_belt&quot;           
-##  [4] &quot;pitch_belt&quot;           &quot;yaw_belt&quot;             &quot;total_accel_belt&quot;    
-##  [7] &quot;gyros_belt_x&quot;         &quot;gyros_belt_y&quot;         &quot;gyros_belt_z&quot;        
-## [10] &quot;accel_belt_x&quot;         &quot;accel_belt_y&quot;         &quot;accel_belt_z&quot;        
-## [13] &quot;magnet_belt_x&quot;        &quot;magnet_belt_y&quot;        &quot;magnet_belt_z&quot;       
-## [16] &quot;roll_arm&quot;             &quot;pitch_arm&quot;            &quot;yaw_arm&quot;             
-## [19] &quot;total_accel_arm&quot;      &quot;gyros_arm_x&quot;          &quot;gyros_arm_y&quot;         
-## [22] &quot;gyros_arm_z&quot;          &quot;accel_arm_x&quot;          &quot;accel_arm_y&quot;         
-## [25] &quot;accel_arm_z&quot;          &quot;magnet_arm_x&quot;         &quot;magnet_arm_y&quot;        
-## [28] &quot;magnet_arm_z&quot;         &quot;roll_dumbbell&quot;        &quot;pitch_dumbbell&quot;      
-## [31] &quot;yaw_dumbbell&quot;         &quot;total_accel_dumbbell&quot; &quot;gyros_dumbbell_x&quot;    
-## [34] &quot;gyros_dumbbell_y&quot;     &quot;gyros_dumbbell_z&quot;     &quot;accel_dumbbell_x&quot;    
-## [37] &quot;accel_dumbbell_y&quot;     &quot;accel_dumbbell_z&quot;     &quot;magnet_dumbbell_x&quot;   
-## [40] &quot;magnet_dumbbell_y&quot;    &quot;magnet_dumbbell_z&quot;    &quot;roll_forearm&quot;        
-## [43] &quot;pitch_forearm&quot;        &quot;yaw_forearm&quot;          &quot;total_accel_forearm&quot; 
-## [46] &quot;gyros_forearm_x&quot;      &quot;gyros_forearm_y&quot;      &quot;gyros_forearm_z&quot;     
-## [49] &quot;accel_forearm_x&quot;      &quot;accel_forearm_y&quot;      &quot;accel_forearm_z&quot;     
-## [52] &quot;magnet_forearm_x&quot;     &quot;magnet_forearm_y&quot;     &quot;magnet_forearm_z&quot;    
-## [55] &quot;classe&quot;</code></pre>
 </div>
 </div>
 <div id="model-selection" class="section level2">
@@ -125,10 +106,78 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 </ul>
 <p>I chose Random Forests, because the authors of the paper I read used it and obtain excellent results. I ended up using the Treebag because it was among the classifiers that worked with the <code>caret</code> package without error. I discuss some of the issues I ran into with the <code>caret</code> package when attempting to use it.</p>
 <p>I thought about using Naive Bayes and or Logistic Regression; however, since this assignment is a multi-classification problem, it would require an one-vs-all method be implemented. Since I would have to spend time to implement this myself, I chose not to do so. (Note that <code>svm</code> as part of the <code>e1071</code> package handles multi-classification out-of-the-box.)</p>
+<p>Below are the models derived from the analysis</p>
+<pre><code>## Loading required package: lattice
+## Loading required package: foreach
+## Loading required package: iterators
+## Loading required package: parallel
+## Loading required package: randomForest
+## randomForest 4.6-10
+## Type rfNews() to see new features/changes/bug fixes.
+## 
+## Attaching package: 'randomForest'
+## 
+## The following object is masked from 'package:dplyr':
+## 
+##     combine
+## 
+## Loading required package: ipred
+## Loading required package: plyr
+## -------------------------------------------------------------------------
+## You have loaded plyr after dplyr - this is likely to cause problems.
+## If you need functions from both plyr and dplyr, please load plyr first, then dplyr:
+## library(plyr); library(dplyr)
+## -------------------------------------------------------------------------
+## 
+## Attaching package: 'plyr'
+## 
+## The following objects are masked from 'package:dplyr':
+## 
+##     arrange, count, desc, failwith, id, mutate, rename, summarise,
+##     summarize</code></pre>
+<p><em>Random Forests</em></p>
+<pre><code>## Random Forest 
+## 
+## 11776 samples
+##    54 predictor
+##     5 classes: 'A', 'B', 'C', 'D', 'E' 
+## 
+## No pre-processing
+## Resampling: Bootstrapped (25 reps) 
+## 
+## Summary of sample sizes: 11776, 11776, 11776, 11776, 11776, 11776, ... 
+## 
+## Resampling results across tuning parameters:
+## 
+##   mtry  Accuracy   Kappa      Accuracy SD  Kappa SD   
+##    2    0.9888066  0.9858402  0.001888596  0.002380599
+##   30    0.9938937  0.9922761  0.001868575  0.002359859
+##   58    0.9888569  0.9859036  0.004265758  0.005395250
+## 
+## Accuracy was used to select the optimal model using  the largest value.
+## The final value used for the model was mtry = 30.</code></pre>
+<p><em>Treebag</em></p>
+<pre><code>## Bagged CART 
+## 
+## 11776 samples
+##    54 predictor
+##     5 classes: 'A', 'B', 'C', 'D', 'E' 
+## 
+## No pre-processing
+## Resampling: Bootstrapped (25 reps) 
+## 
+## Summary of sample sizes: 11776, 11776, 11776, 11776, 11776, 11776, ... 
+## 
+## Resampling results
+## 
+##   Accuracy   Kappa      Accuracy SD  Kappa SD   
+##   0.9884408  0.9853697  0.003346201  0.004235869
+## 
+## </code></pre>
 </div>
 <div id="expected-out-of-sample-error" class="section level2">
 <h2>Expected Out-of-Sample Error</h2>
-<p>The expected out-of-sample error was estimated from the training data we obtained from <code>pml-training.csv</code>. I split the training set into a <code>training-set</code> and <code>testing-set</code>. The <code>training-set</code> was used to generate the model. The <code>testing-set</code> was used to generate the out-of-sample error estimate. This data set was <em>not</em> used to generate the model and thus gives us an idea of how the model may perform on new instances.</p>
+<p>The expected out-of-sample error was estimated from the training data we obtained from <code>pml-training.csv</code>. I split the training set into a <code>training-set</code> and <code>testing-set</code>. The <code>training-set</code> was used to generate the model. The <code>testing-set</code> was used to generate the out-of-sample error estimate. The <code>testing-set</code> data set was <em>not</em> used to generate the model and thus gives us an idea of how the model may perform on new instances.</p>
 <table>
 <thead>
 <tr class="header">
@@ -143,29 +192,95 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 </tr>
 <tr class="even">
 <td align="left">Treebag</td>
-<td align="left">2%</td>
+<td align="left">1%</td>
 </tr>
 </tbody>
 </table>
-<p>I ended up choosing the Random Forest classifier. It ended up producing a perfect score on <code>pml-testing.csv</code>. Because the Expected Out-of-Sample error was so low, I didn’t need to re-evaluate my approach. However, if I did, I would have split the <code>training-set</code> further to produe a <code>validation-set</code> to tune my approach toward. Ostensibly, the cross validation I specify in <code>trainControl</code> should be performing cross validation. However, when the model is examined after calling <code>train</code>, “Bootstrapped” is shown as the resampling method. More information on this is provided in the “Caret Untrustworthiness” section below.</p>
+<div id="random-forests-performance-on-held-out-set" class="section level3">
+<h3>Random Forests Performance on Held Out Set</h3>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction    A    B    C    D    E
+##          A 2231    2    0    0    0
+##          B    0 1513    7    1    1
+##          C    0    3 1361    2    0
+##          D    0    0    0 1283    2
+##          E    1    0    0    0 1439
+## 
+## Overall Statistics
+##                                           
+##                Accuracy : 0.9976          
+##                  95% CI : (0.9962, 0.9985)
+##     No Information Rate : 0.2845          
+##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
+##                                           
+##                   Kappa : 0.9969          
+##  Mcnemar's Test P-Value : NA              
+## 
+## Statistics by Class:
+## 
+##                      Class: A Class: B Class: C Class: D Class: E
+## Sensitivity            0.9996   0.9967   0.9949   0.9977   0.9979
+## Specificity            0.9996   0.9986   0.9992   0.9997   0.9998
+## Pos Pred Value         0.9991   0.9941   0.9963   0.9984   0.9993
+## Neg Pred Value         0.9998   0.9992   0.9989   0.9995   0.9995
+## Prevalence             0.2845   0.1935   0.1744   0.1639   0.1838
+## Detection Rate         0.2843   0.1928   0.1735   0.1635   0.1834
+## Detection Prevalence   0.2846   0.1940   0.1741   0.1638   0.1835
+## Balanced Accuracy      0.9996   0.9976   0.9971   0.9987   0.9989</code></pre>
+</div>
+<div id="treebag-performance-on-held-out-set" class="section level3">
+<h3>Treebag Performance on Held Out Set</h3>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction    A    B    C    D    E
+##          A 2231    7    5    0    0
+##          B    0 1508   10    2    4
+##          C    0    3 1350    7    0
+##          D    0    0    3 1275    0
+##          E    1    0    0    2 1438
+## 
+## Overall Statistics
+##                                           
+##                Accuracy : 0.9944          
+##                  95% CI : (0.9925, 0.9959)
+##     No Information Rate : 0.2845          
+##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
+##                                           
+##                   Kappa : 0.9929          
+##  Mcnemar's Test P-Value : NA              
+## 
+## Statistics by Class:
+## 
+##                      Class: A Class: B Class: C Class: D Class: E
+## Sensitivity            0.9996   0.9934   0.9868   0.9914   0.9972
+## Specificity            0.9979   0.9975   0.9985   0.9995   0.9995
+## Pos Pred Value         0.9947   0.9895   0.9926   0.9977   0.9979
+## Neg Pred Value         0.9998   0.9984   0.9972   0.9983   0.9994
+## Prevalence             0.2845   0.1935   0.1744   0.1639   0.1838
+## Detection Rate         0.2843   0.1922   0.1721   0.1625   0.1833
+## Detection Prevalence   0.2859   0.1942   0.1733   0.1629   0.1837
+## Balanced Accuracy      0.9987   0.9954   0.9926   0.9955   0.9984</code></pre>
+<p>I ended up choosing the Random Forest classifier. It eventually ended up producing a perfect score on <code>pml-testing.csv</code>. Because the Expected Out-of-Sample error was so low, I didn’t need to re-evaluate my approach. However, if I did, I would have split the <code>training-set</code> further to produe a <code>validation-set</code> to tune my approach toward. Ostensibly, the cross validation I specify in <code>trainControl</code> should be performing cross validation. However, when the model is examined after calling <code>train</code>, “Bootstrapped” is shown as the resampling method. More information on this is provided in the “Caret Untrustworthiness” section below.</p>
+</div>
 </div>
 <div id="lessons-along-the-way" class="section level2">
 <h2>Lessons Along the Way</h2>
-<p>My lessons have dealt directly with the <code>caret</code> package. ### Caret Package CV Compatability<br />There are cases where you cannot perform certain types of training across multiple models. For instance, I tried the following algorithms with “cv” as the method for training:</p>
+<p>My lessons have dealt directly with the <code>caret</code> package.</p>
+<div id="caret-package-cv-compatability" class="section level3">
+<h3>Caret Package CV Compatability</h3>
+<p>There are cases where you cannot perform certain types of training across multiple models. For instance, I tried the following algorithms with “cv” as the method for training:</p>
 <ul>
 <li>Generalized Boosted Regression Models (GBM)</li>
 <li>Decision Tree</li>
 </ul>
 <p>However, they do work with the “boot” training method. It’s unclear why this issue exists. What it does suggest is that the to perform the type of training of models one wants, they will be unable to rely too heavily on the <code>caret</code> package.</p>
+</div>
 <div id="caret-speed" class="section level3">
 <h3>Caret Speed</h3>
-<p>The <code>caret</code> package can be extremely slow. While it does a lot of work for you, the amount of time it takes to run algorithms through it can be quite alarming. To mitigate this to some extent, you’ll want to do the following:</p>
-<pre class="r"><code>library(doParallel)
-cl &lt;- makeCluster(detectCores())
-registerDoParallel(cl)
-#...your code
-stopCluster(cl)</code></pre>
-<p>The above tip was obtained from the discussion forum for this project.</p>
+<p>The <code>caret</code> package can be extremely slow. While it does a lot of work for you, the amount of time it takes to run algorithms through it can be quite alarming. To mitigate this to some extent, invoke multiple cores if you have them.</p>
 </div>
 <div id="caret-untrustworthiness" class="section level3">
 <h3>Caret Untrustworthiness</h3>
