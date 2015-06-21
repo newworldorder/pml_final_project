@@ -1,0 +1,119 @@
+---
+title: "Predicting Activities From Body Sensors"
+author: "Nwokedi Idika"
+date: "June 20, 2015"
+output: html_document
+---
+
+## Overview 
+
+In this writeup, I explain the process I went through to complete this machine learning project. 
+
+## Philosophy
+
+The philosophy followed is one that values the time of the machine learning researcher/implementer.  This approach is dervied from Andrew Ng's Machine Learning course (<https://class.coursera.org/ml-005/lecture/59>).  A machine learning diagnostic system should be employed when the results from your machine learning algorithm are undesirable.  In this project, it's unclear what constitutes a "bad" performance.  In the context of this assignment, a "bad" performance would be a classifier that predicted incorrectly on more than 4 of the 20 test cases for this assignment.    
+
+## Approach 
+
+In this section, I describe the approach I took in coming up with a solution for this prediction problem.  The approach I will describe here will be described in a linear fashion.  However, the reality is that it the solution was arrived at in a iterative fashion.  The failed iterations are described in the "Lessons Along the Way" section.  
+
+### Understand the Domain 
+
+The very first thing I did was to try to familiarize myself with the domain.  I did this by first reading up on the study here: <http://groupware.les.inf.puc-rio.br/har>.  I subsequently went on to read the referenced paper on the subject (<http://groupware.les.inf.puc-rio.br/work.jsf?p1=11201>).  The biggest insight came from reading the paper.  In the paper, the authors mentioned the use of a random forest to obtain over to 97% accuracy on predicting on classes.  This finding, led me to believe, that Random Forests may be a promising approach.   
+
+### Explore the Data
+
+After downloading `pml-training.csv` and `pml-testing.csv`, and opened them up to see what column names were given.  I started by looking at the training set.  The variables for the timestamps seemed unclear and looked like candidates for removal in any event.  Subsequently, I applied `summary` on the training set. Through examining the data in this way, I could see that not each variable had valid values in them.  These entries had the equivalent of `NA` or `NaN` values.  
+
+Among the things I did was explore the distribution across classes.  This is important because if the classes are extremely skewed, then a fairly "dumb" classifier could end up with "good" accuracy by always choosing the overrepresented class.  Below is a figure representing the findings.
+
+```{r echo=FALSE}
+library(ggplot2)
+qplot(classe, data = training, fill = user_name, main = "Overrepresentation of Class 'A'")
+```
+
+Class A is overrepresented relative to the other classes.  Thus, if the evaluation produces a poor fit, we may need to address this potential issue.  However, for now, the classes are not so unbalanced to cause immediate alarm so we shall proceed without affecting the distributions.    
+
+While visualizing more of the data would have been nice, I couldn't find a meaningful representation that would help me for feature selection.  Given that there are many variables, I would have to rely on dimensionality reduction (e.g., PCA) to reduce dimensions to the 2 principle components.  While those 2 dimenions would explain most of the variance, it's unclear if they would be the most important for making predictions.
+   
+
+### Understand the Test Set 
+
+Before performing analysis to remove these foreign values from the dataset.  I examined `pml-testing.csv` and noticed that many of the variables were emtpy or contained `NA` values.  This meant that those features could not be used to predict in the final test case. Therefore, it didn't make sense to train model on features that wouldn't be available in the test set.  As a consequence, I ended up removing 102 variables from the training set found in `pml-training.csv`.  Two of those removed variables included the timestamp variables.  The upshot of this was that all of the bad values in variables were completely attributable to the variables that were removed.  So, once those variables were removed, I didn't need to remove entries that had these bad values in them. The set of features are given below.
+
+```{r echo=FALSE}
+library(dplyr)
+tr <- read.csv("pml-training.csv")
+rm_cols <- c("new_window", "kurtosis_roll_belt",  "kurtosis_picth_belt",  "kurtosis_yaw_belt",	"skewness_roll_belt",	
+"skewness_roll_belt.1",	"skewness_yaw_belt","max_roll_belt",  "max_picth_belt","max_yaw_belt",	"min_roll_belt",	"min_pitch_belt",	"min_yaw_belt",	"amplitude_roll_belt", "amplitude_pitch_belt", "amplitude_yaw_belt", "var_total_accel_belt", "avg_roll_belt", "stddev_roll_belt", "var_roll_belt", "avg_pitch_belt", "stddev_pitch_belt", "var_pitch_belt", "avg_yaw_belt", "stddev_yaw_belt", "var_yaw_belt", "var_accel_arm",  "avg_roll_arm",	"stddev_roll_arm",	"var_roll_arm",	"avg_pitch_arm",	"stddev_pitch_arm",	"var_pitch_arm",	"avg_yaw_arm",	"stddev_yaw_arm",	"var_yaw_arm",
+"kurtosis_roll_arm",  "kurtosis_picth_arm",	"kurtosis_yaw_arm",	"skewness_roll_arm",	"skewness_pitch_arm",	"skewness_yaw_arm",	"max_roll_arm",	"max_picth_arm",	"max_yaw_arm",	"min_roll_arm",	"min_pitch_arm",	"min_yaw_arm",	"amplitude_roll_arm",	"amplitude_pitch_arm",	"amplitude_yaw_arm",
+"kurtosis_roll_dumbbell",  "kurtosis_picth_dumbbell",	"kurtosis_yaw_dumbbell",	"skewness_roll_dumbbell",	"skewness_pitch_dumbbell",	"skewness_yaw_dumbbell",	"max_roll_dumbbell",	"max_picth_dumbbell",	"max_yaw_dumbbell",	"min_roll_dumbbell",	"min_pitch_dumbbell",	"min_yaw_dumbbell",	"amplitude_roll_dumbbell",	"amplitude_pitch_dumbbell",	"amplitude_yaw_dumbbell",
+"var_accel_dumbbell",  "avg_roll_dumbbell",	"stddev_roll_dumbbell",	"var_roll_dumbbell",	"avg_pitch_dumbbell",	"stddev_pitch_dumbbell",	"var_pitch_dumbbell",	"avg_yaw_dumbbell",	"stddev_yaw_dumbbell",	"var_yaw_dumbbell",
+"kurtosis_roll_forearm",  "kurtosis_picth_forearm",	"kurtosis_yaw_forearm",	"skewness_roll_forearm",	"skewness_pitch_forearm",	"skewness_yaw_forearm",	"max_roll_forearm",	"max_picth_forearm",	"max_yaw_forearm",	"min_roll_forearm",	"min_pitch_forearm",	"min_yaw_forearm",	"amplitude_roll_forearm",	"amplitude_pitch_forearm",	"amplitude_yaw_forearm",
+"var_accel_forearm",  "avg_roll_forearm",	"stddev_roll_forearm",	"var_roll_forearm",	"avg_pitch_forearm",	"stddev_pitch_forearm",	"var_pitch_forearm",	"avg_yaw_forearm",	"stddev_yaw_forearm",	"var_yaw_forearm",
+"cvtd_timestamp", "X", "raw_timestamp_part_1", "raw_timestamp_part_2")
+c_names <- colnames(tr)
+keepers <- NULL
+keepers_num <- NULL
+for(i in 1:length(tr)){
+  if(!(c_names[i] %in% rm_cols)){
+    keepers <- c(keepers, c_names[i])
+  }
+}
+for(i in 1:length(tr)){
+  if(c_names[i] %in% keepers){
+    keepers_num <- c(keepers_num, i)
+  }
+}
+# select out the rows we care about 
+tr <- dplyr::select(tr, keepers_num)
+colnames(tr)
+```
+
+## Model Selection 
+
+I chose the following classifiers to experiment with:
+
+* Random Forests
+* Treebag
+
+I chose Random Forests, because the authors of the paper I read used it and obtain excellent results.  I ended up using the Treebag because it was among the classifiers that worked with the `caret` package without error. I discuss some of the issues I ran into with the `caret` package when attempting to use it.
+
+I thought about using Naive Bayes and or Logistic Regression; however, since this assignment is a multi-classification problem, it would require an one-vs-all method be implemented.  Since I would have to spend time to implement this myself, I chose not to do so. (Note that `svm` as part of the `e1071` package handles multi-classification out-of-the-box.)
+
+## Expected Out-of-Sample Error 
+
+The expected out-of-sample error was estimated from the training data we obtained from `pml-training.csv`. I split the training set into a `training-set` and `testing-set`.  The `training-set` was used to generate the model.  The `testing-set` was used to generate the out-of-sample error estimate.  This data set was *not* used to generate the model and thus gives us an idea of how the model may perform on new instances.
+
+Classifier    | Expected Out-of-Sample Error
+--------------|-----------------------------
+Random Forest | 1%
+Treebag       | 2%
+
+I ended up choosing the Random Forest classifier. It ended up producing a perfect score on `pml-testing.csv`.  Because the Expected Out-of-Sample error was so low, I didn't need to re-evaluate my approach.  However, if I did, I would have split the `training-set` further to produe a `validation-set` to tune my approach toward.  Ostensibly, the cross validation I specify in `trainControl` should be performing cross validation.  However, when the model is examined after calling `train`, "Bootstrapped" is shown as the resampling method.  More information on this is provided in the "Caret Untrustworthiness" section below.      
+
+## Lessons Along the Way
+My lessons have dealt directly with the `caret` package. 
+### Caret Package CV Compatability  
+There are cases where you cannot perform certain types of training across multiple models.  For instance, I tried the following algorithms with "cv" as the method for training: 
+
+* Generalized Boosted Regression Models (GBM)
+* Decision Tree 
+
+However, they do work with the "boot" training method.  It's unclear why this issue exists.  What it does suggest is that the to perform the type of training of models one wants, they will be unable to rely too heavily on the `caret` package.   
+
+### Caret Speed 
+The `caret` package can be extremely slow.  While it does a lot of work for you, the amount of time it takes to run algorithms through it can be quite alarming.  To mitigate this to some extent, you'll want to do the following: 
+
+```{r eval=FALSE}
+library(doParallel)
+cl <- makeCluster(detectCores())
+registerDoParallel(cl)
+#...your code
+stopCluster(cl)
+```
+
+The above tip was obtained from the discussion forum for this project.  
+
+### Caret Untrustworthiness
+The package allows one to specify a training method.  However, I found that when I requested `cv` (with `number = 1`) or `repeatedcv` (`repeats = 2`) the model return states `Bootstrapped (25 reps)`.  That said, it may be beneficial to perform these functions manually to ensure they happen the way you expect them to.  However, when the `model$dots$trainControl` object is examined, you will see either `cv` or `repeatedcv` as the method specified.     
