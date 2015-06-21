@@ -39,7 +39,7 @@ While visualizing more of the data would have been nice, I couldn't find a meani
 
 ### Understand the Test Set 
 
-Before performing analysis to remove these foreign values from the dataset.  I examined `pml-testing.csv` and noticed that many of the variables were emtpy or contained `NA` values.  This meant that those features could not be used to predict in the final test case. Therefore, it didn't make sense to train model on features that wouldn't be available in the test set.  As a consequence, I ended up removing 102 variables from the training set found in `pml-training.csv`.  Two of those removed variables included the timestamp variables.  The upshot of this was that all of the bad values in variables were completely attributable to the variables that were removed.  So, once those variables were removed, I didn't need to remove entries that had these bad values in them. The set of features are given below.
+Before performing analysis to remove these foreign values from the dataset.  I examined `pml-testing.csv` and noticed that many of the variables were emtpy or contained `NA` values.  This meant that those features could not be used to predict in the final test case. Therefore, it didn't make sense to train model on features that wouldn't be available in the test set.  As a consequence, I ended up removing 102 variables from the training set found in `pml-training.csv`.  Two of those removed variables included the timestamp variables.  The upshot of this was that all of the bad values in variables were completely attributable to the variables that were removed.  So, once those variables were removed, I didn't need to remove entries that had these bad values in them.
 
 ```{r echo=FALSE}
 library(dplyr)
@@ -119,8 +119,8 @@ The expected out-of-sample error was estimated from the training data we obtaine
 
 Classifier    | Expected Out-of-Sample Error
 --------------|-----------------------------
-Random Forest | 1%
-Treebag       | 1%
+Random Forest | 0.3%
+Treebag       | 0.6%
 
 ### Random Forests Performance on Held Out Set
 
@@ -134,7 +134,7 @@ confusionMatrix(predict(rf, testing), testing$classe)
 confusionMatrix(predict(treebag, testing), testing$classe)
 ```
 
-I ended up choosing the Random Forest classifier. It eventually ended up producing a perfect score on `pml-testing.csv`.  Because the Expected Out-of-Sample error was so low, I didn't need to re-evaluate my approach.  However, if I did, I would have split the `training-set` further to produe a `validation-set` to tune my approach toward.  Ostensibly, the cross validation I specify in `trainControl` should be performing cross validation.  However, when the model is examined after calling `train`, "Bootstrapped" is shown as the resampling method.  More information on this is provided in the "Caret Untrustworthiness" section below.      
+I ended up choosing the Random Forest classifier. It eventually ended up producing a perfect score on `pml-testing.csv`.  Because the Expected Out-of-Sample error was so low (0.3%), I didn't need to re-evaluate my approach.  However, if I did, I would have split the `training-set` further to produe a `validation-set` to tune my approach toward.  Ostensibly, the cross validation I specify in `trainControl` should be performing cross validation.  However, when the model is examined after calling `train`, "Bootstrapped" is shown as the resampling method.  More information on this is provided in the "Caret Untrustworthiness" section below.      
 
 ## Lessons Along the Way
 

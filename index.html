@@ -84,8 +84,8 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 </div>
 <div id="understand-the-test-set" class="section level3">
 <h3>Understand the Test Set</h3>
-<p>Before performing analysis to remove these foreign values from the dataset. I examined <code>pml-testing.csv</code> and noticed that many of the variables were emtpy or contained <code>NA</code> values. This meant that those features could not be used to predict in the final test case. Therefore, it didn’t make sense to train model on features that wouldn’t be available in the test set. As a consequence, I ended up removing 102 variables from the training set found in <code>pml-training.csv</code>. Two of those removed variables included the timestamp variables. The upshot of this was that all of the bad values in variables were completely attributable to the variables that were removed. So, once those variables were removed, I didn’t need to remove entries that had these bad values in them. The set of features are given below.</p>
-<pre><code>## 
+<p>Before performing analysis to remove these foreign values from the dataset. I examined <code>pml-testing.csv</code> and noticed that many of the variables were emtpy or contained <code>NA</code> values. This meant that those features could not be used to predict in the final test case. Therefore, it didn’t make sense to train model on features that wouldn’t be available in the test set. As a consequence, I ended up removing 102 variables from the training set found in <code>pml-training.csv</code>. Two of those removed variables included the timestamp variables. The upshot of this was that all of the bad values in variables were completely attributable to the variables that were removed. So, once those variables were removed, I didn’t need to remove entries that had these bad values in them.</p>
+<!-- <pre><code>## 
 ## Attaching package: 'dplyr'
 ## 
 ## The following objects are masked from 'package:stats':
@@ -94,7 +94,7 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 ## 
 ## The following objects are masked from 'package:base':
 ## 
-##     intersect, setdiff, setequal, union</code></pre>
+##     intersect, setdiff, setequal, union</code></pre> -->
 </div>
 </div>
 <div id="model-selection" class="section level2">
@@ -107,7 +107,7 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 <p>I chose Random Forests, because the authors of the paper I read used it and obtain excellent results. I ended up using the Treebag because it was among the classifiers that worked with the <code>caret</code> package without error. I discuss some of the issues I ran into with the <code>caret</code> package when attempting to use it.</p>
 <p>I thought about using Naive Bayes and or Logistic Regression; however, since this assignment is a multi-classification problem, it would require an one-vs-all method be implemented. Since I would have to spend time to implement this myself, I chose not to do so. (Note that <code>svm</code> as part of the <code>e1071</code> package handles multi-classification out-of-the-box.)</p>
 <p>Below are the models derived from the analysis</p>
-<pre><code>## Loading required package: lattice
+<!-- <pre><code>## Loading required package: lattice
 ## Loading required package: foreach
 ## Loading required package: iterators
 ## Loading required package: parallel
@@ -134,7 +134,7 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 ## The following objects are masked from 'package:dplyr':
 ## 
 ##     arrange, count, desc, failwith, id, mutate, rename, summarise,
-##     summarize</code></pre>
+##     summarize</code></pre> -->
 <p><em>Random Forests</em></p>
 <pre><code>## Random Forest 
 ## 
@@ -188,11 +188,11 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 <tbody>
 <tr class="odd">
 <td align="left">Random Forest</td>
-<td align="left">1%</td>
+<td align="left">0.3%</td>
 </tr>
 <tr class="even">
 <td align="left">Treebag</td>
-<td align="left">1%</td>
+<td align="left">0.6%</td>
 </tr>
 </tbody>
 </table>
@@ -263,7 +263,7 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 ## Detection Rate         0.2843   0.1922   0.1721   0.1625   0.1833
 ## Detection Prevalence   0.2859   0.1942   0.1733   0.1629   0.1837
 ## Balanced Accuracy      0.9987   0.9954   0.9926   0.9955   0.9984</code></pre>
-<p>I ended up choosing the Random Forest classifier. It eventually ended up producing a perfect score on <code>pml-testing.csv</code>. Because the Expected Out-of-Sample error was so low, I didn’t need to re-evaluate my approach. However, if I did, I would have split the <code>training-set</code> further to produe a <code>validation-set</code> to tune my approach toward. Ostensibly, the cross validation I specify in <code>trainControl</code> should be performing cross validation. However, when the model is examined after calling <code>train</code>, “Bootstrapped” is shown as the resampling method. More information on this is provided in the “Caret Untrustworthiness” section below.</p>
+<p>I ended up choosing the Random Forest classifier. It eventually ended up producing a perfect score on <code>pml-testing.csv</code>. Because the Expected Out-of-Sample error was so low (0.3%), I didn’t need to re-evaluate my approach. However, if I did, I would have split the <code>training-set</code> further to produe a <code>validation-set</code> to tune my approach toward. Ostensibly, the cross validation I specify in <code>trainControl</code> should be performing cross validation. However, when the model is examined after calling <code>train</code>, “Bootstrapped” is shown as the resampling method. More information on this is provided in the “Caret Untrustworthiness” section below.</p>
 </div>
 </div>
 <div id="lessons-along-the-way" class="section level2">
